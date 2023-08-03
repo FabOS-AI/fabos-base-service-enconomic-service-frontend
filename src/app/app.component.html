@@ -1,0 +1,121 @@
+<div class="header">
+  <img class="logo" src="assets\fabos_logo.svg" alt="">
+</div>
+
+<div id="wrapper" *ngIf="showResult == false">
+
+  <div class="maschine-wrapper">
+    <div class="label">
+      Maschine Values
+    </div>
+    <div *ngFor="let item of wbdMaschineSubmodel.submodelElements; let i = index" class="input-mask-item">
+      <span class="input-mask-label">{{ item.idShort }}</span>
+      <!--<span contenteditable="true" type="text" class="input-mask" [class.green-glow]="maschineValueChanged[i]"
+        (input)="onMInputChange(i, $event)" [(ngModel)]="wbdMaschineSubmodel.submodelElements![i].value"  > </span> -->
+        <input contenteditable="true" type="text" class="input-mask" [class.green-glow]="maschineValueChanged[i]"
+        (input)="onMInputChange(i)" [(ngModel)]="wbdMaschineSubmodel.submodelElements![i].value"  appTwoDigits>
+    </div>
+  </div>
+    
+
+  <div class="maschine-user-wrapper">
+    <div class="label">
+      Maschine User Values
+    </div>
+    <div *ngFor="let item of wbdMaschineUserSubmodel.submodelElements; let i = index" class="input-mask-item">
+      <span class="input-mask-label">{{ item.idShort }}</span>
+      <!-- <span contenteditable="true" type="text" class="input-mask" [class.green-glow]="maschineUserValueChanged[i]"
+        (input)="onMUInputChange(i)">
+        {{ item.value }}
+      </span>-->
+      <input contenteditable="true" type="text" class="input-mask" [class.green-glow]="maschineUserValueChanged[i]"
+        (input)="onMUInputChange(i)" [(ngModel)]="wbdMaschineUserSubmodel.submodelElements![i].value"  appTwoDigits>
+    </div>
+  </div>
+  
+
+  <div class="ai-wrapper">
+    <div class="label">
+      WBD Service Values
+    </div>
+    <div *ngFor="let item of wbdAiSubmodel.submodelElements; let i = index" class="input-mask-item">
+      <span class="input-mask-label">{{ item.idShort }}</span>
+      <!--<span contenteditable="true" type="text" class="input-mask" [class.green-glow]="aiValueChanged[i]"
+        (input)="onAIInputChange(i)">
+        {{ item.value }}
+      </span> -->
+      <input contenteditable="true" type="text" class="input-mask" [class.green-glow]="aiValueChanged[i]"
+        (input)="onAIInputChange(i)" [(ngModel)]="wbdAiSubmodel.submodelElements![i].value " appTwoDigits>
+    </div>
+  </div>
+
+  <div id="choice-wrapper" *ngIf="showChoice == true">
+
+    <div class="machine-dropdown">
+      <button class="machine-dropdown-button button" (click)="machineToggleDropdown()">{{machineText}}</button>
+      <ul class="machine-dropdown-menu" [class.show]="showMachineDropdown">
+        <li *ngFor="let option of machineOptions" (click)="selectMachineOption(option)">{{ option }}</li>
+      </ul>
+    </div>
+
+    <div class="service-dropdown">
+      <button class="service-dropdown-button button" (click)="serviceToggleDropdown()">{{serviceText}}</button>
+      <ul class="service-dropdown-menu" [class.show]="showServiceDropdown">
+        <li *ngFor="let option of serviceOptions" (click)="selectServiceOption(option)">{{ option }}</li>
+      </ul>
+    </div>
+      
+  </div>
+
+  <button class="load-button button" (click)="nextData()" *ngIf="showChoice == true && machineText != 'Select a machine' && serviceText != 'Select a service'">Load Data from AAS Server</button>
+  <button class="load-button button" (click)="loadData()" *ngIf="showChoice == false">Refresh Data from AAS Server</button>
+  <button class="save-button button" (click)="saveChanges()" *ngIf="showChoice == false">Save Changes</button>
+  <button class="calc-button button" (click)="calcResults()" *ngIf="showChoice == false">Calculate Results</button>
+
+  <div class="routerContent">
+    <router-outlet></router-outlet>
+  </div>
+</div>
+
+<table  class="comparison-table" *ngIf="showResult == true;">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Gesamtkosten</th>
+      <th>Umsatzerlöse</th>
+      <th>Gewinn pro Jahr</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Expected Revenue without AI Service</td>
+      <ng-container *ngFor="let item of wbdMaschineSubmodel.submodelElements; let i = index">
+        <td *ngIf="item.idShort == 'Gesamtkosten'">{{ wbdMaschineSubmodel.submodelElements![i].value | number: '1.2-2' }} €</td>
+        <td *ngIf="item.idShort == 'Umsatzerloes'">{{ wbdMaschineSubmodel.submodelElements![i].value | number: '1.2-2' }} €</td>
+        <td *ngIf="item.idShort == 'GewinnJahr'">{{ wbdMaschineSubmodel.submodelElements![i].value | number: '1.2-2' }} €</td>
+      </ng-container>
+    </tr>
+    <tr>
+      <td>Expected Revenue with AI Service</td>
+      <ng-container *ngFor="let item of wbdAiSubmodel.submodelElements; let i = index">
+        <td *ngIf="item.idShort == 'Gesamtkosten'">{{ wbdAiSubmodel.submodelElements![i].value | number: '1.2-2' }} €</td>
+        <td *ngIf="item.idShort == 'Umsatzerloes'">{{ wbdAiSubmodel.submodelElements![i].value | number: '1.2-2' }} €</td>
+        <td *ngIf="item.idShort == 'GewinnJahr'">{{ wbdAiSubmodel.submodelElements![i].value | number: '1.2-2' }} €</td>
+      </ng-container>
+    </tr>
+    <tr>
+      <td>Difference</td>
+      <ng-container *ngFor="let item1 of wbdMaschineSubmodel.submodelElements; let i = index">
+        <ng-container *ngFor="let item2 of wbdAiSubmodel.submodelElements; let k = index">
+          <td *ngIf="item1.idShort == 'Gesamtkosten' && item2.idShort == 'Gesamtkosten'">{{ calcDiff(wbdAiSubmodel.submodelElements![k].value!, wbdMaschineSubmodel.submodelElements![i].value!) | number: '1.2-2' }} €</td>
+          <td *ngIf="item1.idShort == 'Umsatzerloes' && item2.idShort == 'Umsatzerloes'">{{ calcDiff(wbdAiSubmodel.submodelElements![k].value!, wbdMaschineSubmodel.submodelElements![i].value!) | number: '1.2-2' }} €</td>
+          <td *ngIf="item1.idShort == 'GewinnJahr' && item2.idShort == 'GewinnJahr'">{{ calcDiff(wbdAiSubmodel.submodelElements![k].value!, wbdMaschineSubmodel.submodelElements![i].value!) | number: '1.2-2' }} €</td>
+        </ng-container>
+      </ng-container>
+    </tr>
+  </tbody>
+</table>
+
+<button class="back-button button" *ngIf="showResult == true;" (click)="showResult = false;">
+Back to Overview
+</button>
